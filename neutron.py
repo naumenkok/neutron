@@ -1,3 +1,7 @@
+class MyError(Exception):
+    pass
+
+
 class Color:
     red = 0
     white = 1
@@ -19,16 +23,35 @@ class Board:
     def check(self):
         pass
 
-    def move(self):
-        pass
+    def move(self, yx_from, yx_to):
+        self.board[yx_to[0]][yx_to[1]] = self.board[yx_from[0]][yx_from[1]]
+        self.board[yx_from[0]][yx_from[1]] = Empty()
 
         
     def play(self):
-        # print (f'Start')
-        # x_str, y_str = input("Enter the coordinates of the piece you want to move(x y):").split()
-        # x = int(x_str) - 1
-        # y = int(y_str) - 1
-        pass
+        print (f'Start')
+        for move in range(1, 7):
+            x_from_str, y_from_str = input("Enter coordinates of the piece you want to move (x y):").split()
+            x = int(x_from_str) - 1
+            y = int(y_from_str) - 1
+            # if move == 1 and y != 4:
+            #     raise MyError
+            # elif move == 1 and y != 0:
+            #     raise MyError
+            yx_from = [y, x]
+            
+            
+            x_to_str, y_to_str = input("Enter coordinates where you want to move to (x y):").split()
+            x = int(x_to_str) - 1
+            y = int(y_to_str) - 1
+            yx_to = [y, x]
+            
+            self.__str__()
+            print(f'                   .')
+            self.move(yx_from, yx_to)
+            self.__str__()
+
+        # pass
 
 
     def __str__(self):
@@ -65,7 +88,7 @@ class Empty:
 
     def __str__(self):
         return ' +'
-
+   
 
 b = Board()
-b.__str__()
+b.play()
