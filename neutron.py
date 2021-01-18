@@ -5,12 +5,13 @@ class Color:
     empty = 3
 
 
-class Board:
+class Board: 
     def __init__(self):
       self.board = [[Empty()] * 5 for y in range(5)]
-      self.board[1][0] = Piece(Color.red)
-      self.board[4][3] = Piece(Color.white)
       self.board[2][2] = Piece(Color.neutron)
+      for x in range(5):
+        self.board[0][x] = Piece(Color.red)
+        self.board[4][x] = Piece(Color.white)   
 
     def get_color(self, x, y):
         return self.board[y][x].color
@@ -24,8 +25,11 @@ class Board:
         
     def play(self):
         # print (f'Start')
-        # (a, b)
+        # x_str, y_str = input("Enter the coordinates of the piece you want to move(x y):").split()
+        # x = int(x_str) - 1
+        # y = int(y_str) - 1
         pass
+
 
     def __str__(self):
         result = '   1 2 3 4 5  '
