@@ -12,7 +12,7 @@ class Color:
 class Board: 
     def __init__(self):
       self.board = [[Empty()] * 5 for y in range(5)]
-      self.board[2][1] = Piece(Color.neutron)
+      self.board[3][3] = Piece(Color.neutron)
       for x in range(5):
         self.board[0][x] = Piece(Color.red)
         # self.board[4][x] = Piece(Color.white)   
@@ -66,35 +66,19 @@ class Piece:
 
     def variants_of_moving_diagonal(self, board, x, y):
         moves = []
-        for a in (-1, 1):
-            c = x + a
-            b = y + a
-            while (0 <= c <= 4) and (0 <= b <= 4):
-                color = board.get_color(c, b)
-                if color != Color.empty:
-                    break
-                b += a
-                c += a
-            moves.append([c-a, b-a])
+        for i in (-1, 1):
+            for j in (-1, 1):
+                x_i = x + i
+                y_j = y + j
+                while (0 <= x_i <= 4) and (0 <= y_j <= 4):
+                    color = board.get_color(x_i, y_j)
+                    if color != Color.empty:
+                        break
+                    x_i += i
+                    y_j += j
+                moves.append([x_i-i, y_j-j])
         start_position = [x, y]
-        if start_position in moves:
-            moves.remove(start_position)
-        print(moves)
-
-    def variants_of_moving_diagonal_2(self, board, x, y):
-        moves = []
-        for a in (-1, 1):
-            c = x + a
-            b = y - a
-            while (0 <= c <= 4) and (0 <= b <= 4):
-                color = board.get_color(c, b)
-                if color != Color.empty:
-                    break
-                b -= a
-                c += a
-            moves.append([c-a, b+a])
-        start_position = [x, y]
-        if start_position in moves:
+        while start_position in moves:
             moves.remove(start_position)
         print(moves)
 
@@ -117,7 +101,7 @@ class Piece:
                 i += j
             moves.append([i-j, y])
         start_position = [x, y]
-        if start_position in moves:
+        while start_position in moves:
             moves.remove(start_position)
         print(moves) 
 
@@ -144,6 +128,5 @@ b = Board()
 b.play()
 
 p = Piece(Color.neutron)
-p.variants_of_moving_diagonal(b, 1, 2)
-p.variants_of_moving_diagonal_2(b, 1, 2)
-p.variants_of_moving_straight(b, 1, 2)
+p.variants_of_moving_diagonal(b, 3, 3)
+p.variants_of_moving_straight(b, 3, 3)
