@@ -114,6 +114,23 @@ class Board:
             inp = input("Enter number:")
         return int(inp)
 
+    # def check_is_empty(self):
+    #     color_number_for_empty = 3
+    #     list_of_empty_in_0 = []
+    #     for x in range(0):
+    #         if get_color(x, 0) = color_number_for_empty:
+    #             list_of_empty_in_0.append([x, 0])
+    #     return list_of_empty_in_0
+
+    def find_white_for_closed_empty(self):
+        color_number_for_white = 1
+        for elem in self.get_coordinates(color_number_for_white):
+            variants = self.board[elem[1]][elem[0]].variants_of_moving_all(self, elem[0], elem[1])
+            for x in range(5):
+                if [x, 0] in variants:
+                    return elem
+        return False
+
     def get_coord_from(self, inp, modulo, number_of_move, from_position):
         if (((inp == 2) or (inp == 3)) and (modulo == 1)) or (((inp == 3) or (inp == 4))and (modulo == 3)):
             [x_from, y_from] = self.get_coordinates(2)[0]
@@ -123,7 +140,11 @@ class Board:
             if number_of_move == 0:
                 x_from, y_from = 2, 4
             else:
-                x_from, y_from = self.choose_coordinates_from_list(1, from_position)
+                elem = self.find_white_for_closed_empty()
+                if type(elem) is bool:
+                    x_from, y_from = self.choose_coordinates_from_list(1, from_position)
+                else:
+                    [x_from, y_from] = elem
         else:
             x_from, y_from = self.enter_and_check(from_position, modulo)
         return x_from, y_from
@@ -137,7 +158,12 @@ class Board:
             if number_of_move == 0:
                 x_to, y_to = 0, 2
             else:
+                for x in range(5):
+                    if [x, 0] in variants_of_moves:
+                        [x_to, y_to] = [x, 0]
+                        return x_to, y_to
                 x_to, y_to = self.choose_coordinates_from_list(1, to_position, variants_of_moves)
+                
         elif ((inp == 3) or (inp == 4)) and (modulo == 3):
             x_to, y_to = self.choose_coordinates_for_clever(x, y)
         else:
@@ -163,7 +189,8 @@ class Board:
             if [x, 4] in variants:
                 dict_d1[(x, 4)]={}
                 dict_d1[(x, 4)][1]=1
-                variants.remove([x, 4])
+                if len(variants) > 1:
+                    variants.remove([x, 4])
         for variant in variants:
             dict_d1[(variant[0], variant[1])]={}
             variants_d2 = Piece(Color.neutron).variants_of_moving_all(self, variant[0], variant[1])
@@ -172,7 +199,8 @@ class Board:
             for x in range(5):
                 if [x, 4] in variants_d2:
                     dict_d1[(variant[0], variant[1])][number_of_m] += 1
-                    variants_d2.remove([x, 4])
+                    if len(variants_d2) > 1:
+                        variants_d2.remove([x, 4])
             for variant_d2 in variants_d2:
                 variants_d3 = Piece(Color.neutron).variants_of_moving_all(self, variant_d2[0], variant_d2[1])
                 for x in range(5):
