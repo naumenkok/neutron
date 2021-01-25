@@ -54,6 +54,32 @@ from random import choice
 # b = a.split()
 # print(b)
 
-lis_t = [[1, 2], [4, 2], [6, 3], [9, 33]]
-[a, b] = choice(lis_t)
-print(a, b)
+# lis_t = [[1, 2], [4, 2], [6, 3], [9, 33]]
+# [a, b] = choice(lis_t)
+# print(a, b)
+
+
+def testik(a, b, c, d, e, f, dict={}):
+    # dict = {(2, 6): 5, (4, 5): 3, (2, 0): 0}
+    # dict[(a)] /= 5
+
+    dict_d1 = {}
+    dict_d1[(a)] = {}
+    dict_d1[(a)][c] = e
+    dict_d1[(a)][c] += 10
+    dict_d1[(b)] = {}
+    dict_d1[(b)][d] = f
+
+    print(dict_d1)
+
+testik((2,3), (4, 0), "коорд1", "коорд2", 70, 21)
+
+# list_1 = [[1, 2], [6, 4], [4, 1], [1, 1]]
+# list_1.remove([4, 1])
+# print(list_1)
+
+
+# a = 3
+# b = 2.9
+# c = max(a, b)
+# print(c)

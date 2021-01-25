@@ -10,11 +10,21 @@ class Color:
 
 class Board: 
     def __init__(self):
-      self.board = [[Empty()] * 5 for y in range(5)]
-      self.board[2][2] = Piece(Color.neutron)
-      for x in range(5):
-        self.board[0][x] = Piece(Color.red)
-        self.board[4][x] = Piece(Color.white)   
+        self.board = [[Empty()] * 5 for y in range(5)]
+        # self.board[1][3] = Piece(Color.neutron)
+        # for x in range(5):
+        self.board[1][0] = Piece(Color.red)
+        self.board[0][1] = Piece(Color.red)
+        self.board[0][2] = Piece(Color.red)
+        self.board[0][3] = Piece(Color.red)
+        self.board[0][4] = Piece(Color.red)
+
+        self.board[4][0] = Piece(Color.white) 
+        self.board[4][1] = Piece(Color.white) 
+        self.board[2][0] = Piece(Color.white) 
+        self.board[4][3] = Piece(Color.white) 
+        self.board[4][4] = Piece(Color.white)   
+
 
     def get_coordinates(self, color_number):
         list_of_coordinates = []
@@ -143,15 +153,43 @@ class Board:
     #     if depth == 4:
     #         return []
     #     # variants = self.board[y_n][x_n].variants_of_moving_all(self, x_n, y_n)
-    #     variants = Piece(Color.neutron).variants_of_moving_all(self, x_n, y_n)
+    #     variants = Piece(Color.neutron).variants_of_moving_all(self, x_n, y_n, dict={})
     #     for x in range(5):
     #         if ([x, 4] in variants) and (depth != 2):
-    #             path.append([x_n, y_n])
-    #             path.append([x, 4])
+    #             dict[(x, 4)]=100
     #             return path
-    #         for variant in variants:
-    #             path.append([x_n, y_n])
-    #             variant_rec(variant[0], variant[1], depth + 1, path)
+    #     for variant in variants:
+    #         path.append([x_n, y_n])
+    #         self.variant_rec(variant[0], variant[1], depth + 1, path)
+
+    def probability_of_winning(self, x_n, y_n, dict_d1={}):
+        variants = Piece(Color.neutron).variants_of_moving_all(self, x_n, y_n)
+        # self.board[x_n][x_n] = Piece(Color.empty)
+        for x in range(5):
+            if [x, 4] in variants:
+                dict_d1[(x, 4)]={}
+                dict_d1[(x, 4)][1]=1
+                variants.remove([x, 4])
+                # return dict_d1
+        for variant in variants:
+            dict_d1[(variant[0], variant[1])]={}
+            variants_d2 = Piece(Color.neutron).variants_of_moving_all(self, variant[0], variant[1])
+            number_of_m = len(variants_d2)
+            dict_d1[(variant[0], variant[1])][number_of_m]=0
+            for x in range(5):
+                if [x, 4] in variants_d2:
+                    dict_d1[(variant[0], variant[1])][number_of_m] += 1
+                    variants_d2.remove([x, 4])
+            for variant_d2 in variants_d2:
+                variants_d3 = Piece(Color.neutron).variants_of_moving_all(self, variant_d2[0], variant_d2[1])
+                for x in range(5):
+                    if [x, 4] in variants_d3:
+                        dict_d1[(variant[0], variant[1])][number_of_m] += 1
+        # self.board[x_n][x_n] = Piece(Color.neutron)
+        return dict_d1
+                
+
+            
 
     def play(self):
         print('Start. Select game mode: 1-man and man. 2-man and fool computer')
