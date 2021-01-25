@@ -1,4 +1,4 @@
-from neutron import Board
+from class_board import Board
 
 
 def main():
