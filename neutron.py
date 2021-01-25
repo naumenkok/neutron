@@ -11,19 +11,10 @@ class Color:
 class Board: 
     def __init__(self):
         self.board = [[Empty()] * 5 for y in range(5)]
-        # self.board[1][3] = Piece(Color.neutron)
-        # for x in range(5):
-        self.board[1][0] = Piece(Color.red)
-        self.board[0][1] = Piece(Color.red)
-        self.board[0][2] = Piece(Color.red)
-        self.board[0][3] = Piece(Color.red)
-        self.board[0][4] = Piece(Color.red)
-
-        self.board[4][0] = Piece(Color.white) 
-        self.board[4][1] = Piece(Color.white) 
-        self.board[2][0] = Piece(Color.white) 
-        self.board[4][3] = Piece(Color.white) 
-        self.board[4][4] = Piece(Color.white)   
+        self.board[2][2] = Piece(Color.neutron)
+        for x in range(5):
+            self.board[0][x] = Piece(Color.red)
+            self.board[4][x] = Piece(Color.white) 
 
 
     def get_coordinates(self, color_number):
@@ -127,24 +118,36 @@ class Board:
 
     def choose_type_of_game(self):
         inp = "0"
-        while (inp != "1") and (inp != "2"):
+        while (inp != "1") and (inp != "2") and (inp != "3"):
             inp = input("Enter number:")
         return int(inp)
 
-    def get_coord_from(self, inp, modulo, from_position):
-        if (inp == 2) and (modulo == 2):
+    def get_coord_from(self, inp, modulo, number_of_move, from_position):
+        if (((inp == 2) or (inp == 3)) and (modulo == 1)) or ((inp == 3)and (modulo == 3)):
+            [x_from, y_from] = self.get_coordinates(2)[0]
+        elif ((inp == 2) or (inp == 3)) and (modulo == 2):
             x_from, y_from = self.choose_coordinates_from_list(0, from_position)
-        elif (inp == 2) and (modulo == 1):
-            x_from, y_from = self.choose_coordinates_from_list(2, from_position)
+        elif (inp == 3) and (modulo == 0):  
+            if number_of_move == 0:
+                x_from, y_from = 2, 4
+            else:
+                x_from, y_from = self.choose_coordinates_from_list(1, from_position)
         else:
             x_from, y_from = self.enter_and_check(from_position, modulo)
         return x_from, y_from
 
-    def get_coord_to(self, inp, modulo, to_position, variants_of_moves):
-        if (inp == 2) and (modulo == 2):
-            x_to, y_to = self.choose_coordinates_from_list(0, to_position, variants_of_moves)
-        elif (inp == 2) and (modulo == 1):
+    def get_coord_to(self, inp, modulo, number_of_move, to_position, variants_of_moves, x, y):
+        if ((inp == 2) or (inp == 3)) and (modulo == 1):
             x_to, y_to = self.choose_coordinates_from_list(2, to_position, variants_of_moves)
+        elif ((inp == 2) or (inp == 3)) and (modulo == 2):
+            x_to, y_to = self.choose_coordinates_from_list(0, to_position, variants_of_moves)
+        elif (inp == 3) and (modulo == 0):
+            if number_of_move == 0:
+                x_to, y_to = 0, 2
+            else:
+                x_to, y_to = self.choose_coordinates_from_list(1, to_position, variants_of_moves)
+        elif (inp == 3) and (modulo == 3):
+            x_to, y_to = self.choose_coordinates_for_clever(x, y)
         else:
             x_to, y_to = self.enter_and_check(to_position, variants_of_moves)
         return x_to, y_to
@@ -162,15 +165,14 @@ class Board:
     #         path.append([x_n, y_n])
     #         self.variant_rec(variant[0], variant[1], depth + 1, path)
 
-    def probability_of_winning(self, x_n, y_n, dict_d1={}):
+    def probability_of_winning(self, x_n, y_n, dict_d1 = {}):
+        self.board[y_n][x_n] = Empty()
         variants = Piece(Color.neutron).variants_of_moving_all(self, x_n, y_n)
-        # self.board[x_n][x_n] = Piece(Color.empty)
         for x in range(5):
             if [x, 4] in variants:
                 dict_d1[(x, 4)]={}
                 dict_d1[(x, 4)][1]=1
                 variants.remove([x, 4])
-                # return dict_d1
         for variant in variants:
             dict_d1[(variant[0], variant[1])]={}
             variants_d2 = Piece(Color.neutron).variants_of_moving_all(self, variant[0], variant[1])
@@ -185,14 +187,21 @@ class Board:
                 for x in range(5):
                     if [x, 4] in variants_d3:
                         dict_d1[(variant[0], variant[1])][number_of_m] += 1
-        # self.board[x_n][x_n] = Piece(Color.neutron)
+        for key in dict_d1:
+            for key_2 in dict_d1[key]:
+                dict_d1[key] = float('{:.2f}'.format(dict_d1[key][key_2]/key_2))
+        self.board[y_n][x_n] = Piece(Color.neutron)
         return dict_d1
-                
 
-            
+    def choose_coordinates_for_clever(self, x_n, y_n):
+        dict = self.probability_of_winning(x_n, y_n)
+        x_to, y_to = max(dict, key=dict.get)
+        # print(x_to, y_to)
+        # self.__str__()
+        return x_to, y_to
 
     def play(self):
-        print('Start. Select game mode: 1-man and man. 2-man and fool computer')
+        print('Start. Select game mode: 1-man and man. 2-man and fool computer. 3-clever computer and fool computer')
         inp = self.choose_type_of_game()
         self.__str__()
         bool_result = False
@@ -202,13 +211,12 @@ class Board:
             to_position = 1
             modulo = number_of_move % 4
 
-            x_from, y_from = self.get_coord_from(inp, modulo, from_position)
+            x_from, y_from = self.get_coord_from(inp, modulo, number_of_move, from_position)
             variants_of_moves = self.board[y_from][x_from].variants_of_moving_all(self, x_from, y_from)
             bool_result = self.check_amount_of_moves(variants_of_moves)
             if bool_result:
                 quit() 
-            
-            x_to, y_to = self.get_coord_to(inp, modulo, to_position, variants_of_moves)
+            x_to, y_to = self.get_coord_to(inp, modulo, number_of_move, to_position, variants_of_moves, x_from, y_from)
             
             computer_move = input("Press Enter for move")
             if number_of_move == 0:
@@ -289,3 +297,6 @@ class Empty:
 
     def __str__(self):
         return ' +'
+
+# b = Board()
+# b.probability_of_winning(3, 1)
