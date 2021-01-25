@@ -1,5 +1,4 @@
-class MyError(Exception):
-    pass
+from random import choice
 
 
 class Color:
@@ -12,43 +11,178 @@ class Color:
 class Board: 
     def __init__(self):
       self.board = [[Empty()] * 5 for y in range(5)]
-      self.board[3][3] = Piece(Color.neutron)
+      self.board[2][2] = Piece(Color.neutron)
       for x in range(5):
         self.board[0][x] = Piece(Color.red)
-        # self.board[4][x] = Piece(Color.white)   
+        self.board[4][x] = Piece(Color.white)   
+
+    def get_coordinates(self, color_number):
+        list_of_coordinates = []
+        for x in range(5):
+            for y in range(5):
+                if self.board[y][x].color == color_number:
+                    x_n_ = x
+                    y_n_ = y
+                    list_of_coordinates.append([x_n_, y_n_])
+        return list_of_coordinates
 
     def get_color(self, x, y):
         return self.board[y][x].color
 
-    def move(self, yx_from, yx_to):
-        self.board[yx_to[0]][yx_to[1]] = self.board[yx_from[0]][yx_from[1]]
-        self.board[yx_from[0]][yx_from[1]] = Empty()
+    def move(self, xy_from, xy_to):
+        self.board[xy_to[1]][xy_to[0]] = self.board[xy_from[1]][xy_from[0]]
+        self.board[xy_from[1]][xy_from[0]] = Empty()
 
-    def check(self):
-        pass
-        
+    def check_move(self, list_of_moves, move):
+        if move in list_of_moves:
+            return True
+        else:
+            print(f'You cannot move a pawn to this place')
+            return False
+
+    def check_result(self, x, y):
+        color_number_for_neutron = 2
+        if self.get_color(x, y) == color_number_for_neutron:
+            if y == 0:
+                print(f'Red win!!!')
+                return True
+            elif y == 4:
+                print(f'White win!!!')
+                return True
+            else:
+                return False
+
+    def check_amount_of_moves(self, variants_of_moves):
+        if variants_of_moves == []:
+            return True
+        else:
+            return False
+
+    def check_type_of_pawn(self, x, y, modulo):
+        color_number_for_red = 0
+        color_number_for_white = 1
+        color_number_for_neutron = 2
+        if modulo == 0 and self.get_color(x, y) != color_number_for_white:
+            print('You enter incorreсt coordinates')
+            return False
+        if ((modulo == 1) or (modulo == 3)) and (self.get_color(x, y) != color_number_for_neutron):
+            print('You enter incorreсt coordinates')
+            return False
+        if modulo == 2 and self.get_color(x, y) != color_number_for_red:
+            print('You enter incorreсt coordinates')
+            return False
+        else:
+            return True
+
+    def enter_coordinates(self, position):
+        if position == 0:
+            text = f'Enter coordinates of the piece you want to move (x y):'
+        elif position == 1:
+            text = f'Enter coordinates where you want to move to (x y):'
+        inp = input(text).split()
+        if len(inp) == 2:
+            if all(map(lambda c:c.isdigit(), inp)):
+                x_from_str, y_from_str = inp
+                x = int(x_from_str) - 1
+                y = int(y_from_str) - 1
+                return x, y
+            else:
+                print('You enter incorreсt coordinates')
+                return False    
+        else:
+            print('You enter incorreсt coordinates')
+            return False
+
+    def enter_and_check(self, position, param=None):
+        bool_flag = False
+        while not bool_flag:
+            try:
+                x, y = self.enter_coordinates(position)
+                if position == 0:
+                    bool_flag = self.check_type_of_pawn(x, y, param)
+                elif position == 1:
+                    bool_flag = self.check_move(param, [x, y])
+            except:
+                print('You enter incorreсt coordinates')
+                bool_flag = False
+        return x, y
+
+    def choose_coordinates_from_list(self, color_number, position, variants_of_moves=None):
+        if position == 0:
+            list_of_coordinates = self.get_coordinates(color_number)
+            [x, y] = choice(list_of_coordinates)
+        elif position == 1:
+            [x, y] = choice(variants_of_moves)
+        return x, y
+
+    def choose_type_of_game(self):
+        inp = "0"
+        while (inp != "1") and (inp != "2"):
+            inp = input("Enter number:")
+        return int(inp)
+
+    def get_coord_from(self, inp, modulo, from_position):
+        if (inp == 2) and (modulo == 2):
+            x_from, y_from = self.choose_coordinates_from_list(0, from_position)
+        elif (inp == 2) and (modulo == 1):
+            x_from, y_from = self.choose_coordinates_from_list(2, from_position)
+        else:
+            x_from, y_from = self.enter_and_check(from_position, modulo)
+        return x_from, y_from
+
+    def get_coord_to(self, inp, modulo, to_position, variants_of_moves):
+        if (inp == 2) and (modulo == 2):
+            x_to, y_to = self.choose_coordinates_from_list(0, to_position, variants_of_moves)
+        elif (inp == 2) and (modulo == 1):
+            x_to, y_to = self.choose_coordinates_from_list(2, to_position, variants_of_moves)
+        else:
+            x_to, y_to = self.enter_and_check(to_position, variants_of_moves)
+        return x_to, y_to
+
+    # def variant_rec(self, x_n, y_n, depth=1, path=[]):
+    #     if depth == 4:
+    #         return []
+    #     # variants = self.board[y_n][x_n].variants_of_moving_all(self, x_n, y_n)
+    #     variants = Piece(Color.neutron).variants_of_moving_all(self, x_n, y_n)
+    #     for x in range(5):
+    #         if ([x, 4] in variants) and (depth != 2):
+    #             path.append([x_n, y_n])
+    #             path.append([x, 4])
+    #             return path
+    #         for variant in variants:
+    #             path.append([x_n, y_n])
+    #             variant_rec(variant[0], variant[1], depth + 1, path)
+
     def play(self):
-        print (f'Start')
+        print('Start. Select game mode: 1-man and man. 2-man and fool computer')
+        inp = self.choose_type_of_game()
         self.__str__()
-        # for move in range(1, 7):
-        #     x_from_str, y_from_str = input("Enter coordinates of the piece you want to move (x y):").split()
-        #     x = int(x_from_str) - 1
-        #     y = int(y_from_str) - 1
-        #     if move == 1 and y != 4 and y != 0:
-        #         print(f'You enter wrong coordinates. Try again.')
-        #     yx_from = [y, x]
-            
-            
-        #     x_to_str, y_to_str = input("Enter coordinates where you want to move to (x y):").split()
-        #     x = int(x_to_str) - 1
-        #     y = int(y_to_str) - 1
-        #     yx_to = [y, x]
-            
-        #     self.__str__()
-        #     print(f'                   .')
-        #     self.move(yx_from, yx_to)
-        #     self.__str__()
+        bool_result = False
+        number_of_move = 0
+        while not bool_result:
+            from_position = 0
+            to_position = 1
+            modulo = number_of_move % 4
 
+            x_from, y_from = self.get_coord_from(inp, modulo, from_position)
+            variants_of_moves = self.board[y_from][x_from].variants_of_moving_all(self, x_from, y_from)
+            bool_result = self.check_amount_of_moves(variants_of_moves)
+            if bool_result:
+                quit() 
+            
+            x_to, y_to = self.get_coord_to(inp, modulo, to_position, variants_of_moves)
+            
+            computer_move = input("Press Enter for move")
+            if number_of_move == 0:
+                print('First move')
+            else:
+                print('Next move')
+            self.__str__()
+            print()
+            self.move([x_from, y_from], [x_to, y_to])
+            self.__str__()
+            bool_result = self.check_result(x_to, y_to)
+            number_of_move += 1
 
     def __str__(self):
         result = '   1 2 3 4 5  '
@@ -64,46 +198,41 @@ class Piece:
     def __init__(self, color):
         self.color = color
 
+    def check_start_position(self, moves, x, y):
+        start_position = [x, y]
+        while start_position in moves:
+            moves.remove(start_position)
+        return (moves)
+
     def variants_of_moving_diagonal(self, board, x, y):
         moves = []
         for i in (-1, 1):
             for j in (-1, 1):
-                x_i = x + i
-                y_j = y + j
-                while (0 <= x_i <= 4) and (0 <= y_j <= 4):
-                    color = board.get_color(x_i, y_j)
-                    if color != Color.empty:
-                        break
-                    x_i += i
-                    y_j += j
-                moves.append([x_i-i, y_j-j])
-        start_position = [x, y]
-        while start_position in moves:
-            moves.remove(start_position)
-        print(moves)
+                moves_diag = self.loop_for_variants(board, moves, x, y, i, j)
+        return moves_diag
 
-    def variants_of_moving_straight(self, board, x, y):
-        moves = []
+    def variants_of_moving_all(self, board, x, y):
+        moves_diag = self.variants_of_moving_diagonal(board, x, y)
         for j in (-1, 1):
-            i = y + j
-            while 0 <= i <= 4:
-                color = board.get_color(x, i)
-                if color != Color.empty:
-                    break
-                i += j
-            moves.append([x, i-j])
-        for j in (-1, 1):
-            i = x + j
-            while 0 <= i <= 4:
-                color = board.get_color(i, y)
-                if color != Color.empty:
-                    break
-                i += j
-            moves.append([i-j, y])
-        start_position = [x, y]
-        while start_position in moves:
-            moves.remove(start_position)
-        print(moves) 
+            i = 0
+            moves_ver_diag = self.loop_for_variants(board, moves_diag, x, y, i, j)
+            moves_hor_ver_diag = self.loop_for_variants(board, moves_ver_diag, x, y, j, i)
+        moves_all = moves_hor_ver_diag   
+        self.check_start_position(moves_all, x, y) 
+        # print(moves_all)        
+        return moves_all
+    
+    def loop_for_variants(self, board, moves, x, y, i, j):
+        x_i = x + i
+        y_j = y + j
+        while (0 <= x_i <= 4) and (0 <= y_j <= 4):
+            color = board.get_color(x_i, y_j)
+            if color != Color.empty:
+                break
+            x_i += i
+            y_j += j
+        moves.append([x_i - i, y_j - j])
+        return moves  
 
     def __str__(self):
         pict = (
@@ -117,16 +246,8 @@ class Piece:
 class Empty:
     color = Color.empty
 
-    def variants_of_moving(self, board, x, y):
-        raise Exception('Error !')
+    def variants_of_moving_all(self, board, x, y):
+        return []
 
     def __str__(self):
         return ' +'
-   
-
-b = Board()
-b.play()
-
-p = Piece(Color.neutron)
-p.variants_of_moving_diagonal(b, 3, 3)
-p.variants_of_moving_straight(b, 3, 3)
